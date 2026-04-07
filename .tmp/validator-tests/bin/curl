@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+printf '%s\n' "$*" > "${MOCK_LOG_DIR}/curl-args.txt"
+
+mode="${MOCK_CURL_MODE:-200}"
+case "$mode" in
+  200)
+    printf '200'
+    ;;
+  503)
+    printf '503'
+    ;;
+  sleep-then-200)
+    sleep "${MOCK_CURL_SLEEP:-1}"
+    printf '200'
+    ;;
+  fail)
+    exit 1
+    ;;
+  *)
+    printf '%s' "$mode"
+    ;;
+esac

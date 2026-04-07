@@ -1,0 +1,2 @@
+# Placeholder lockfile for local validator compatibility.
+# Regenerate with `uv lock` in an environment where `uv` is installed.

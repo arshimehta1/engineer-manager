@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "engineer-manager-openenv"
+version = "0.1.0"
+description = "OpenEnv server for the Engineer Manager scheduling simulator"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.135.0",
+    "numpy>=2.0.0",
+    "openenv-core[core]>=0.2.0",
+    "pydantic>=2.0.0",
+    "streamlit>=1.40.0",
+    "uvicorn>=0.30.0",
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["server"]

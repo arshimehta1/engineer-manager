@@ -1,0 +1,176 @@
+:root {
+    --bg-0: __BG0__;
+    --bg-1: __BG1__;
+    --line: __LINE__;
+    --text: __TEXT__;
+    --muted: __MUTED__;
+    --accent: __ACCENT__;
+    --accent-2: __ACCENT2__;
+}
+
+.stApp {
+    background:
+        radial-gradient(circle at top left, rgba(30, 86, 198, 0.20), transparent 30%),
+        radial-gradient(circle at top right, rgba(15, 150, 120, 0.16), transparent 28%),
+        linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 48%, #0a1120 100%);
+    color: var(--text);
+}
+
+#MainMenu, header, footer, [data-testid="stToolbar"], [data-testid="stStatusWidget"], [data-testid="stDecoration"] {
+    visibility: hidden !important;
+    height: 0 !important;
+    position: fixed !important;
+}
+
+[data-testid="stAppViewContainer"] > .main {
+    padding-top: 1.1rem;
+}
+
+.block-container {
+    max-width: 1640px;
+}
+
+h1, h2, h3, p, label, span, div {
+    color: var(--text);
+}
+
+.stButton > button {
+    color: __BUTTON_TEXT__ !important;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+    border: 0 !important;
+    font-weight: 800 !important;
+    font-size: 0.92rem !important;
+    border-radius: 999px !important;
+    min-height: 2.7rem !important;
+    padding-left: 0.7rem !important;
+    padding-right: 0.7rem !important;
+}
+
+.stButton > button[kind="secondary"] {
+    background: linear-gradient(180deg, rgba(66, 128, 255, 0.10), rgba(66, 128, 255, 0.05)) !important;
+    color: #8dc2ff !important;
+    border: 1px solid rgba(98, 156, 255, 0.28) !important;
+}
+
+.stButton > button * {
+    color: __BUTTON_TEXT__ !important;
+}
+
+.stButton > button[kind="secondary"] * {
+    color: #8dc2ff !important;
+}
+
+div[data-testid="stMetric"] {
+    background: __METRIC_BG__;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 0.8rem;
+    box-shadow: __SHADOW__;
+}
+
+.stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div {
+    background: __INPUT_BG__ !important;
+    color: var(--text) !important;
+    border-radius: 14px !important;
+}
+
+.stDataFrame, [data-testid="stDataFrame"] {
+    border-radius: 18px !important;
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+.hero {
+    background: __HERO_BG__;
+    border: 1px solid var(--line);
+    border-radius: 32px;
+    padding: 1.5rem 1.6rem 1.35rem 1.6rem;
+    margin-bottom: 1.2rem;
+    box-shadow: __SHADOW__;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: auto -8% -35% auto;
+    width: 18rem;
+    height: 18rem;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(124, 231, 255, 0.22), transparent 62%);
+    pointer-events: none;
+    filter: blur(6px);
+}
+
+.hero-kicker {
+    position: relative;
+    z-index: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 0.55rem;
+}
+
+.hero h1 {
+    margin: 0;
+    position: relative;
+    z-index: 1;
+    font-size: 3rem;
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.hero p {
+    position: relative;
+    z-index: 1;
+    margin: 0.5rem 0 0 0;
+    max-width: 54rem;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.help-chip {
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    margin: 0.55rem 0.45rem 0 0;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    font-size: 0.83rem;
+}
+
+.status-card {
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 0.85rem 0.95rem;
+    box-shadow: __SHADOW__;
+    margin-bottom: 0.5rem;
+}
+
+.status-card-label {
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.status-card-value {
+    margin-top: 0.25rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.status-card-subtle {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+}
+
+.status-card-warning {
+    background: linear-gradient(180deg, rgba(145, 104, 17, 0.34), rgba(89, 64, 13, 0.34));
+    border-color: rgba(255, 204, 92, 0.30);
+}

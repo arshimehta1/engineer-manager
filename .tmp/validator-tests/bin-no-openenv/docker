@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+subcmd="${1:-}"
+shift || true
+
+printf '%s %s\n' "$subcmd" "$*" >> "${MOCK_LOG_DIR}/docker-calls.txt"
+
+case "$subcmd" in
+  info)
+    if [[ "${MOCK_DOCKER_INFO:-ok}" == "ok" ]]; then
+      exit 0
+    fi
+    printf 'daemon unavailable\n' >&2
+    exit 1
+    ;;
+  build)
+    sleep "${MOCK_DOCKER_BUILD_SLEEP:-0}"
+    if [[ "${MOCK_DOCKER_BUILD:-ok}" == "ok" ]]; then
+      printf 'mock build complete\n'
+      exit 0
+    fi
+    printf 'mock build failed\n' >&2
+    exit 1
+    ;;
+  *)
+    printf 'unexpected docker subcommand: %s\n' "$subcmd" >&2
+    exit 2
+    ;;
+esac
