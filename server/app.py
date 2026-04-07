@@ -5,7 +5,7 @@ from __future__ import annotations
 from textwrap import dedent
 
 import uvicorn
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from openenv.core.env_server.http_server import create_fastapi_app
 
 try:
@@ -346,6 +346,7 @@ WEB_PAGE = dedent(
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Engineer Manager</title>
+      <link rel="icon" href="/favicon.ico" sizes="any">
       <link rel="stylesheet" href="/assets/app.css">
     </head>
     <body>
@@ -430,6 +431,11 @@ def web_css() -> PlainTextResponse:
 @app.get("/assets/app.js", include_in_schema=False)
 def web_js() -> PlainTextResponse:
     return PlainTextResponse(WEB_JS, media_type="application/javascript")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=204)
 
 
 @app.get("/manifest.json", include_in_schema=False)
