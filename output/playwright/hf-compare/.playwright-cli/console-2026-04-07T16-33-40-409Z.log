@@ -1,0 +1,30 @@
+[     547ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'battery'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'document-domain'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'layout-animations'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'oversized-images'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'vr'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     547ms] [WARNING] Unrecognized feature: 'wake-lock'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'battery'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'document-domain'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'layout-animations'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'oversized-images'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'vr'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  232352ms] [WARNING] Unrecognized feature: 'wake-lock'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'battery'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'document-domain'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'layout-animations'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'oversized-images'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'vr'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[  233330ms] [WARNING] Unrecognized feature: 'wake-lock'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[ 4502649ms] [ERROR] Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR @ https://huggingface.co/api/spaces/AzraelH/engineer-manager/events?session_uuid=YR2B_GQsIL68OjWs6qaGE:0
+[ 4502663ms] [ERROR] Failed to fetch Space status via SSE: network error @ https://huggingface.co/front/build/kube-ddbf588/SpaceHeader-CMiHL5TI.js:53
+[ 4502672ms] [ERROR] SSE Stream ended with error: TypeError: network error @ https://huggingface.co/front/build/kube-ddbf588/SSEUtils-u2Vk31jK.js:0
+[ 4503936ms] [ERROR] Failed to load resource: net::ERR_HTTP2_PROTOCOL_ERROR @ https://huggingface.co/api/spaces/AzraelH/engineer-manager/metrics:0
+[ 4503936ms] [ERROR] Failed to fetch Space status via SSE: network error @ https://huggingface.co/front/build/kube-ddbf588/SpaceHeader-CMiHL5TI.js:10
+[ 4503936ms] [ERROR] SSE Stream ended with error: TypeError: network error @ https://huggingface.co/front/build/kube-ddbf588/SSEUtils-u2Vk31jK.js:0

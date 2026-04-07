@@ -1,0 +1,47 @@
+- generic [ref=e2]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Spaces Hugging Face's logo AzraelH / engineer-manager like 0 Running" [level=1] [ref=e7]:
+        - generic [ref=e8]:
+          - link "Spaces" [ref=e9] [cursor=pointer]:
+            - /url: /spaces
+          - link "Hugging Face's logo" [ref=e10] [cursor=pointer]:
+            - /url: /
+            - img "Hugging Face's logo" [ref=e11]
+        - separator [ref=e12]
+        - generic [ref=e13]:
+          - link [ref=e17] [cursor=pointer]:
+            - /url: /AzraelH
+          - link "AzraelH" [ref=e21] [cursor=pointer]:
+            - /url: /AzraelH
+          - generic [ref=e22]: /
+        - generic [ref=e23]:
+          - link "engineer-manager" [ref=e24] [cursor=pointer]:
+            - /url: /spaces/AzraelH/engineer-manager
+          - button "Copy space name to clipboard" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+        - generic [ref=e30]:
+          - button "like" [ref=e31] [cursor=pointer]:
+            - img [ref=e32]
+            - generic [ref=e34]: like
+          - button "0" [ref=e35] [cursor=pointer]
+        - generic [ref=e39] [cursor=pointer]: Running
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - link "App" [ref=e43] [cursor=pointer]:
+            - /url: /spaces/AzraelH/engineer-manager
+            - img [ref=e44]
+            - text: App
+          - link "Files" [ref=e48] [cursor=pointer]:
+            - /url: /spaces/AzraelH/engineer-manager/tree/main
+            - img [ref=e49]
+            - generic [ref=e52]: Files
+          - link "Community" [ref=e53] [cursor=pointer]:
+            - /url: /spaces/AzraelH/engineer-manager/discussions
+            - img [ref=e54]
+            - text: Community
+        - button [ref=e59] [cursor=pointer]:
+          - img [ref=e60]
+  - main [ref=e64]:
+    - iframe [ref=e66]:
+      

@@ -1,0 +1,42 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: Engineer Manager Simulator
+    - heading "Run the day before the day runs you." [level=1] [ref=e5]
+    - paragraph [ref=e6]: This is a direct native UI for the Space. It talks to the environment API without the Gradio bridge, so it avoids the Hugging Face wrapper errors that were breaking the previous page.
+  - generic [ref=e7]:
+    - complementary [ref=e8]:
+      - generic [ref=e9]:
+        - heading "Controls" [level=2] [ref=e10]
+        - generic [ref=e11]:
+          - text: Target slot
+          - spinbutton "Target slot" [ref=e12]: "0"
+        - button "Reset Environment" [ref=e13] [cursor=pointer]
+        - generic [ref=e14]:
+          - button "Advance Time" [ref=e15] [cursor=pointer]
+          - button "Schedule Work" [ref=e16] [cursor=pointer]
+          - button "Move Meeting" [ref=e17] [cursor=pointer]
+          - button "Mute Comms" [ref=e18] [cursor=pointer]
+        - generic [ref=e19]: Resetting environment...
+    - main [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - generic [ref=e24]: Current Time
+            - strong [ref=e25]: "-"
+          - generic [ref=e26]:
+            - generic [ref=e27]: Current Slot
+            - strong [ref=e28]: "-"
+          - generic [ref=e29]:
+            - generic [ref=e30]: Flow Score
+            - strong [ref=e31]: "-"
+          - generic [ref=e32]:
+            - generic [ref=e33]: Social Debt
+            - strong [ref=e34]: "-"
+        - heading "Timeline" [level=2] [ref=e35]
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - heading "Task Buffer" [level=2] [ref=e38]
+            - list [ref=e39]
+          - generic [ref=e40]:
+            - heading "Last Response" [level=2] [ref=e41]
+            - generic [ref=e42]: "{}"

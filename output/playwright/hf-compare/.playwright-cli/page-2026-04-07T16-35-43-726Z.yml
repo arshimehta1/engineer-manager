@@ -1,0 +1,94 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: Engineer Manager Simulator
+    - heading "Run the day before the day runs you." [level=1] [ref=e5]
+    - paragraph [ref=e6]: This is a direct native UI for the Space. It talks to the environment API without the Gradio bridge, so it avoids the Hugging Face wrapper errors that were breaking the previous page.
+  - generic [ref=e7]:
+    - complementary [ref=e8]:
+      - generic [ref=e9]:
+        - heading "Controls" [level=2] [ref=e10]
+        - generic [ref=e11]:
+          - text: Target slot
+          - spinbutton "Target slot" [ref=e12]: "0"
+        - button "Reset Environment" [ref=e13] [cursor=pointer]
+        - generic [ref=e14]:
+          - button "Advance Time" [active] [ref=e15] [cursor=pointer]
+          - button "Schedule Work" [ref=e16] [cursor=pointer]
+          - button "Move Meeting" [ref=e17] [cursor=pointer]
+          - button "Mute Comms" [ref=e18] [cursor=pointer]
+        - generic [ref=e19]: Action applied.
+    - main [ref=e20]:
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - generic [ref=e24]: Current Time
+            - strong [ref=e25]: 09:30
+          - generic [ref=e26]:
+            - generic [ref=e27]: Current Slot
+            - strong [ref=e28]: "1"
+          - generic [ref=e29]:
+            - generic [ref=e30]: Flow Score
+            - strong [ref=e31]: "0.00"
+          - generic [ref=e32]:
+            - generic [ref=e33]: Social Debt
+            - strong [ref=e34]: "0.00"
+        - heading "Timeline" [level=2] [ref=e35]
+        - generic [ref=e36]:
+          - generic [ref=e146]:
+            - generic [ref=e147]: Slot 0
+            - strong [ref=e148]: Meeting
+          - generic [ref=e149]:
+            - generic [ref=e150]: Slot 1
+            - strong [ref=e151]: Open
+          - generic [ref=e152]:
+            - generic [ref=e153]: Slot 2
+            - strong [ref=e154]: Open
+          - generic [ref=e155]:
+            - generic [ref=e156]: Slot 3
+            - strong [ref=e157]: Open
+          - generic [ref=e158]:
+            - generic [ref=e159]: Slot 4
+            - strong [ref=e160]: Open
+          - generic [ref=e161]:
+            - generic [ref=e162]: Slot 5
+            - strong [ref=e163]: Meeting
+          - generic [ref=e164]:
+            - generic [ref=e165]: Slot 6
+            - strong [ref=e166]: Open
+          - generic [ref=e167]:
+            - generic [ref=e168]: Slot 7
+            - strong [ref=e169]: Meeting
+          - generic [ref=e170]:
+            - generic [ref=e171]: Slot 8
+            - strong [ref=e172]: Open
+          - generic [ref=e173]:
+            - generic [ref=e174]: Slot 9
+            - strong [ref=e175]: Open
+          - generic [ref=e176]:
+            - generic [ref=e177]: Slot 10
+            - strong [ref=e178]: Open
+          - generic [ref=e179]:
+            - generic [ref=e180]: Slot 11
+            - strong [ref=e181]: Open
+          - generic [ref=e182]:
+            - generic [ref=e183]: Slot 12
+            - strong [ref=e184]: Meeting
+          - generic [ref=e185]:
+            - generic [ref=e186]: Slot 13
+            - strong [ref=e187]: Meeting
+          - generic [ref=e188]:
+            - generic [ref=e189]: Slot 14
+            - strong [ref=e190]: Open
+          - generic [ref=e191]:
+            - generic [ref=e192]: Slot 15
+            - strong [ref=e193]: Open
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - heading "Task Buffer" [level=2] [ref=e87]
+            - list [ref=e88]:
+              - listitem [ref=e194]: "Task 1: 4 slots, complexity 1.5"
+              - listitem [ref=e195]: "Task 2: 3 slots, complexity 1.75"
+              - listitem [ref=e196]: "Task 3: 3 slots, complexity 1.75"
+          - generic [ref=e92]:
+            - heading "Last Response" [level=2] [ref=e93]
+            - generic [ref=e94]: "{ \"observation\": { \"timeline\": [ 2, 0, 0, 0, 0, 2, 0, 2, 0, 0, 0, 0, 2, 2, 0, 0 ], \"task_buffer\": [ { \"duration\": 4, \"hidden_complexity\": 1.5 }, { \"duration\": 3, \"hidden_complexity\": 1.75 }, { \"duration\": 3, \"hidden_complexity\": 1.75 } ], \"distraction_risk\": 0.15, \"current_slot\": 1, \"current_time\": \"09:30\", \"recovery_state\": 0, \"mute_comms\": false, \"social_debt\": 0, \"calendar_churn\": 0, \"flow_score\": 0 }, \"reward\": 0, \"done\": false }"

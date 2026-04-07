@@ -1,0 +1,8 @@
+[     611ms] [WARNING] Unrecognized feature: 'ambient-light-sensor'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'battery'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'document-domain'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'layout-animations'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'legacy-image-formats'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'oversized-images'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'vr'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
+[     611ms] [WARNING] Unrecognized feature: 'wake-lock'. @ https://huggingface.co/spaces/AzraelH/engineer-manager:103
