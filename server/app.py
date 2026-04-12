@@ -7,6 +7,10 @@ from textwrap import dedent
 import uvicorn
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from openenv.core.env_server.http_server import create_fastapi_app
+from pydantic import BaseModel
+
+from graders import grade_task_0, grade_task_1, grade_task_2
+from tasks import TASKS
 
 try:
     from ..models import EngineerManagerAction, EngineerManagerObservation
@@ -28,6 +32,11 @@ app = create_fastapi_app(
     EngineerManagerObservation,
     max_concurrent_envs=2,
 )
+
+
+class GraderRequest(BaseModel):
+    task_id: str
+    trajectory: list[dict]
 
 WEB_CSS = dedent(
     """\
@@ -451,6 +460,27 @@ def manifest() -> JSONResponse:
             "icons": [],
         }
     )
+
+
+@app.get("/tasks", include_in_schema=False)
+def tasks() -> JSONResponse:
+    return JSONResponse({"tasks": TASKS})
+
+
+@app.post("/grader", include_in_schema=False)
+def grader(request: GraderRequest) -> JSONResponse:
+    graders = {
+        "quiet-morning": grade_task_0,
+        "meeting-surgery": grade_task_1,
+        "delivery-triage": grade_task_2,
+    }
+    grader_fn = graders.get(request.task_id)
+    if grader_fn is None:
+        return JSONResponse(
+            {"error": f"Unknown task_id: {request.task_id}", "score": 0.0, "passed": False},
+            status_code=400,
+        )
+    return JSONResponse(grader_fn({"trajectory": request.trajectory}))
 
 
 def run(host: str = "0.0.0.0", port: int = 8000) -> None:

@@ -43,3 +43,13 @@ openenv validate http://127.0.0.1:8000
 - `task_buffer`: pending tasks with estimated duration and hidden complexity
 - `flow_score`, `social_debt`, `calendar_churn`: core scoring metrics
 - `current_slot`, `current_time`, `recovery_state`, `mute_comms`: live execution state
+
+## Built-in benchmark tasks
+
+Set `TASK_NAME` to select a deterministic scenario before reset. Available tasks:
+
+- `quiet-morning`: high-noise start where muting comms early and protecting focus is rewarded
+- `meeting-surgery`: fragmented calendar where selective meeting moves should improve flow
+- `delivery-triage`: constrained delivery day with hidden task complexity and tighter tradeoffs
+
+Each task has a grader in [benchmark_tasks.py](/C:/Users/arshi/OneDrive/Desktop/idk/engineer-manager/benchmark_tasks.py:1). The environment also exposes task metadata and the current grader score in `observation.metadata.episode_metrics.grader_score`.

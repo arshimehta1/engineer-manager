@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from uuid import uuid4
+import os
 
 from openenv.core.env_server.interfaces import Environment, EnvironmentMetadata
 from openenv.core.env_server.types import State
 
+from benchmark_tasks import TASK_SPECS, apply_task, grade_trajectory
 from focus_resource_env import FocusResourceEnv
 
 try:
@@ -28,14 +30,17 @@ class EngineerManagerEnvironment(
         end_hour: str = "17:00",
         distraction_risk: float = 0.15,
         seed: int | None = 7,
+        task_name: str | None = None,
     ) -> None:
         super().__init__()
         self._start_hour = start_hour
         self._end_hour = end_hour
         self._distraction_risk = distraction_risk
         self._seed = seed
+        self._task_name = task_name or os.getenv("TASK_NAME")
         self._step_count = 0
         self._episode_id = str(uuid4())
+        self._trajectory: list[dict[str, object]] = []
         self._env = FocusResourceEnv(
             start_hour=start_hour,
             end_hour=end_hour,
@@ -47,18 +52,23 @@ class EngineerManagerEnvironment(
         self,
         seed: int | None = None,
         episode_id: str | None = None,
+        task_name: str | None = None,
         **_: object,
     ) -> EngineerManagerObservation:
         self._seed = self._seed if seed is None else seed
+        self._task_name = task_name or self._task_name or os.getenv("TASK_NAME")
         self._episode_id = episode_id or str(uuid4())
         self._step_count = 0
+        self._trajectory = []
         self._env = FocusResourceEnv(
             start_hour=self._start_hour,
             end_hour=self._end_hour,
             distraction_risk=self._distraction_risk,
             seed=self._seed,
         )
-        return self._to_observation(self._env.reset(), reward=0.0, done=False)
+        self._env.reset()
+        apply_task(self._env, self._task_name)
+        return self._to_observation(self._env._observation(), reward=0.0, done=False)
 
     def step(
         self,
@@ -71,6 +81,15 @@ class EngineerManagerEnvironment(
             (action.target_slot, action.operation)
         )
         self._step_count += 1
+        self._trajectory.append(
+            {
+                "action": {"target_slot": int(action.target_slot), "operation": int(action.operation)},
+                "observation": observation,
+                "reward": float(reward),
+                "done": bool(done),
+                "info": info,
+            }
+        )
         return self._to_observation(observation, reward=reward, done=done, info=info)
 
     @property
@@ -87,7 +106,8 @@ class EngineerManagerEnvironment(
             name="Engineer Manager",
             description=(
                 "Manage a workday by scheduling deep work, rescheduling meetings, "
-                "and controlling communication noise."
+                "and controlling communication noise. "
+                f"Available tasks: {', '.join(sorted(TASK_SPECS))}."
             ),
             version="0.1.0",
         )
@@ -103,5 +123,20 @@ class EngineerManagerEnvironment(
         payload = dict(observation)
         payload["reward"] = reward
         payload["done"] = done
-        payload["metadata"] = info or {}
+        metadata = dict(info or {})
+        metadata["task_name"] = self._task_name
+        metadata["episode_metrics"] = {
+            "interruptions": int(self._env.interruptions),
+            "invalid_actions": int(self._env.invalid_actions),
+            "remaining_tasks": len(self._env.task_buffer),
+            "scheduled_work_slots": sum(1 for slot in self._env.timeline if int(slot) == 1),
+            "successful_reschedules": sum(
+                1
+                for step in self._trajectory
+                if step["info"].get("action_info", {}).get("status") == "meeting_rescheduled"
+            ),
+            "total_score": float(self._env._total_score()),
+            "grader_score": grade_trajectory(self._task_name or "", self._trajectory) if self._trajectory else 0.0,
+        }
+        payload["metadata"] = metadata
         return EngineerManagerObservation.model_validate(payload)
