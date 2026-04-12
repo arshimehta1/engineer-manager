@@ -87,6 +87,13 @@ def log_end(success: bool, steps: int, score: float, rewards: list[float]) -> No
     )
 
 
+def log_error(stage: str, error: Exception) -> None:
+    print(
+        f"[ERROR] stage={_sanitize_field(stage)} error={_sanitize_field(error)}",
+        flush=True,
+    )
+
+
 def estimate_max_flow_score(timeline: list[int]) -> float:
     slot_count = len(timeline)
     if slot_count <= 0:
@@ -180,12 +187,15 @@ def coerce_action(raw_text: str, observation: dict[str, Any]) -> dict[str, int]:
 
 
 def get_model_action(
-    client: OpenAI,
+    client: OpenAI | None,
     step: int,
     observation: dict[str, Any],
     rewards: list[float],
     history: list[str],
 ) -> dict[str, int]:
+    if client is None:
+        return choose_fallback_action(observation)
+
     user_prompt = build_user_prompt(step, observation, rewards, history)
     try:
         completion = client.chat.completions.create(
@@ -214,18 +224,23 @@ async def create_env() -> GenericEnvClient:
 
 
 async def main() -> None:
-    api_key = _require_env("HF_TOKEN", HF_TOKEN)
-    client = OpenAI(base_url=API_BASE_URL, api_key=api_key)
+    client: OpenAI | None = None
     env = None
     rewards: list[float] = []
     history: list[str] = []
     steps_taken = 0
     success = False
     score = 0.0
+    observation: dict[str, Any] = {}
 
     log_start(TASK_NAME, BENCHMARK, MODEL_NAME)
 
     try:
+        if HF_TOKEN:
+            client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+        else:
+            log_error("startup", RuntimeError("Missing HF_TOKEN; using fallback policy"))
+
         env = await create_env()
         result = await env.reset()
         observation = dict(result.observation)
@@ -261,9 +276,11 @@ async def main() -> None:
                 break
 
         total_reward = math.fsum(rewards)
-        score = normalize_score(total_reward, observation if "observation" in locals() else {})
+        score = normalize_score(total_reward, observation)
         score = round(score, 2)
         success = score > 0.0
+    except Exception as error:
+        log_error("runtime", error)
     finally:
         if env is not None:
             try:
@@ -274,4 +291,8 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as error:
+        log_error("fatal", error)
+        log_end(success=False, steps=0, score=0.0, rewards=[])
