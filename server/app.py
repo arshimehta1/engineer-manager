@@ -34,9 +34,10 @@ app = create_fastapi_app(
 )
 
 
-class GradeRequest(BaseModel):
-    action: dict
-    ground_truth: dict | None = None
+class GraderRequest(BaseModel):
+    task_id: str
+    state: dict
+    reward: float
 
 WEB_CSS = dedent(
     """\
@@ -468,8 +469,16 @@ def tasks() -> list[dict]:
 
 
 @app.post("/grader", include_in_schema=False)
-def grader(request: GradeRequest) -> JSONResponse:
-    graders = {
+def grader(request: GraderRequest) -> JSONResponse:
+    task_index_map = {
+        "quiet-morning": 0,
+        "engineer_manager_task_0": 0,
+        "meeting-surgery": 1,
+        "engineer_manager_task_1": 1,
+        "delivery-triage": 2,
+        "engineer_manager_task_2": 2,
+    }
+    grader_fn_map = {
         "quiet-morning": grade_task_0,
         "meeting-surgery": grade_task_1,
         "delivery-triage": grade_task_2,
@@ -477,26 +486,17 @@ def grader(request: GradeRequest) -> JSONResponse:
         "engineer_manager_task_1": grade_task_1,
         "engineer_manager_task_2": grade_task_2,
     }
-    task_id = request.action.get("task_id", "engineer_manager_task_0")
-    reward = request.action.get("reward", 0.0)
-    state = {
-        "task_id": request.action.get("task_index"),
-        "task_name": request.action.get("task_name"),
-        "metadata": request.action.get("metadata", {}),
-    }
-    if state["task_id"] is None:
-        if task_id == "quiet-morning" or task_id == "engineer_manager_task_0":
-            state["task_id"] = 0
-        elif task_id == "meeting-surgery" or task_id == "engineer_manager_task_1":
-            state["task_id"] = 1
-        elif task_id == "delivery-triage" or task_id == "engineer_manager_task_2":
-            state["task_id"] = 2
-
-    grader_fn = graders.get(task_id)
+    grader_fn = grader_fn_map.get(request.task_id)
     if grader_fn is None:
-        return JSONResponse({"score": 0.0}, status_code=200)
-    score = float(grader_fn(state, reward))
-    return JSONResponse({"score": score})
+        return JSONResponse(
+            {"error": f"Unknown task_id: {request.task_id}", "score": 0.0, "passed": False},
+            status_code=400,
+        )
+    state = dict(request.state)
+    if "task_id" not in state or state["task_id"] is None:
+        state["task_id"] = task_index_map[request.task_id]
+    score = float(grader_fn(state, request.reward))
+    return JSONResponse({"task_id": request.task_id, "score": score, "passed": score >= 0.0, "reward": score})
 
 
 def run(host: str = "0.0.0.0", port: int = 8000) -> None:
