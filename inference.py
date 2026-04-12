@@ -2,7 +2,12 @@ import asyncio
 import json
 import math
 import os
+import socket
+import subprocess
+import sys
 import textwrap
+import time
+from pathlib import Path
 from typing import Any
 
 from openai import OpenAI
@@ -19,6 +24,10 @@ BENCHMARK = os.getenv("BENCHMARK", "openenv")
 MAX_STEPS = int(os.getenv("MAX_STEPS", "32"))
 TEMPERATURE = float(os.getenv("TEMPERATURE", "0.1"))
 MAX_TOKENS = int(os.getenv("MAX_TOKENS", "120"))
+LOCAL_SERVER_HOST = os.getenv("LOCAL_SERVER_HOST", "127.0.0.1")
+LOCAL_SERVER_STARTUP_TIMEOUT = float(os.getenv("LOCAL_SERVER_STARTUP_TIMEOUT", "15"))
+
+_LOCAL_SERVER_PROCESS: subprocess.Popen[str] | None = None
 
 SYSTEM_PROMPT = textwrap.dedent(
     """
@@ -90,6 +99,13 @@ def log_end(success: bool, steps: int, score: float, rewards: list[float]) -> No
 def log_error(stage: str, error: Exception) -> None:
     print(
         f"[ERROR] stage={_sanitize_field(stage)} error={_sanitize_field(error)}",
+        flush=True,
+    )
+
+
+def log_info(stage: str, message: str) -> None:
+    print(
+        f"[INFO] stage={_sanitize_field(stage)} message={_sanitize_field(message)}",
         flush=True,
     )
 
@@ -213,19 +229,100 @@ def get_model_action(
         return choose_fallback_action(observation)
 
 
-async def create_env() -> GenericEnvClient:
-    if OPENENV_BASE_URL:
-        env = GenericEnvClient(base_url=OPENENV_BASE_URL)
-        await env.connect()
-        return env
+def _reserve_local_port(host: str) -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind((host, 0))
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return int(sock.getsockname()[1])
 
-    image_name = _require_env("LOCAL_IMAGE_NAME", LOCAL_IMAGE_NAME)
-    return await GenericEnvClient.from_docker_image(image_name)
+
+def _server_script_path() -> Path:
+    return Path(__file__).resolve().parent / "server" / "app.py"
+
+
+async def _connect_env(base_url: str) -> GenericEnvClient:
+    env = GenericEnvClient(base_url=base_url)
+    await env.connect()
+    return env
+
+
+def _start_local_server() -> str:
+    global _LOCAL_SERVER_PROCESS
+
+    if _LOCAL_SERVER_PROCESS is not None:
+        raise RuntimeError("Local server process is already running")
+
+    host = LOCAL_SERVER_HOST
+    port = _reserve_local_port(host)
+    script_path = _server_script_path()
+    process = subprocess.Popen(
+        [sys.executable, str(script_path), "--host", host, "--port", str(port)],
+        cwd=str(Path(__file__).resolve().parent),
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    _LOCAL_SERVER_PROCESS = process
+
+    deadline = time.monotonic() + LOCAL_SERVER_STARTUP_TIMEOUT
+    health_url = f"http://{host}:{port}/health"
+    base_url = f"http://{host}:{port}"
+
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError("Local server process exited before becoming healthy")
+        try:
+            import urllib.request
+
+            with urllib.request.urlopen(health_url, timeout=1.0) as response:
+                if response.status == 200:
+                    return base_url
+        except Exception:
+            time.sleep(0.25)
+
+    raise RuntimeError("Timed out waiting for the local server to become healthy")
+
+
+def stop_local_server() -> None:
+    global _LOCAL_SERVER_PROCESS
+
+    process = _LOCAL_SERVER_PROCESS
+    _LOCAL_SERVER_PROCESS = None
+    if process is None:
+        return
+
+    if process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+
+
+async def create_env() -> tuple[GenericEnvClient, str]:
+    if OPENENV_BASE_URL:
+        return await _connect_env(OPENENV_BASE_URL), "remote"
+
+    if LOCAL_IMAGE_NAME:
+        try:
+            return await GenericEnvClient.from_docker_image(LOCAL_IMAGE_NAME), "docker"
+        except Exception as error:
+            log_error("docker", error)
+            log_info("docker", "Falling back to bundled local server")
+
+    else:
+        log_info("startup", "LOCAL_IMAGE_NAME not set; using bundled local server")
+
+    local_base_url = _start_local_server()
+    log_info("local-server", f"Started bundled env server at {local_base_url}")
+    return await _connect_env(local_base_url), "local-server"
 
 
 async def main() -> None:
     client: OpenAI | None = None
     env = None
+    env_mode = "unknown"
     rewards: list[float] = []
     history: list[str] = []
     steps_taken = 0
@@ -241,7 +338,8 @@ async def main() -> None:
         else:
             log_error("startup", RuntimeError("Missing HF_TOKEN; using fallback policy"))
 
-        env = await create_env()
+        env, env_mode = await create_env()
+        log_info("env", f"Connected via {env_mode}")
         result = await env.reset()
         observation = dict(result.observation)
 
@@ -287,6 +385,7 @@ async def main() -> None:
                 await env.close()
             except Exception:
                 pass
+        stop_local_server()
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
 
