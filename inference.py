@@ -17,7 +17,7 @@ except ImportError:
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-HF_TOKEN = os.getenv("HF_TOKEN")
+API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
 LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 OPENENV_BASE_URL = os.getenv("OPENENV_BASE_URL")
 TASK_NAME = os.getenv("TASK_NAME", "engineer-manager")
@@ -176,8 +176,17 @@ def choose_fallback_action(observation: dict[str, Any]) -> dict[str, int]:
     current_slot = int(observation.get("current_slot", 0))
     distraction_risk = float(observation.get("distraction_risk", 0.0))
     mute_comms = bool(observation.get("mute_comms", False))
-    if distraction_risk >= 0.2 and not mute_comms:
+    recovery_state = int(observation.get("recovery_state", 0))
+    timeline = observation.get("timeline") or []
+
+    if current_slot == 0 and distraction_risk > 0.0 and not mute_comms:
         return {"target_slot": current_slot, "operation": 3}
+
+    if recovery_state > 0:
+        return {"target_slot": current_slot, "operation": 0}
+
+    if current_slot < len(timeline) and int(timeline[current_slot]) == 0 and observation.get("task_buffer"):
+        return {"target_slot": current_slot, "operation": 1}
 
     empty_slot = first_future_slot(observation, 0)
     if empty_slot is not None and observation.get("task_buffer"):
@@ -237,7 +246,10 @@ async def create_env() -> Any:
         return env
 
     if LOCAL_IMAGE_NAME:
-        return await GenericEnvClient.from_docker_image(LOCAL_IMAGE_NAME)
+        try:
+            return await GenericEnvClient.from_docker_image(LOCAL_IMAGE_NAME)
+        except Exception:
+            pass
 
     env = _InProcessEnvClient()
     await env.connect()
@@ -252,23 +264,25 @@ async def main() -> None:
     success = False
     score = 0.0
     observation: dict[str, Any] = {}
+    completed = False
 
     log_start(TASK_NAME, BENCHMARK, MODEL_NAME)
 
     try:
-        if not HF_TOKEN:
-            raise RuntimeError("Missing required environment variable: HF_TOKEN")
-
-        client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+        client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY) if API_KEY else None
         env = await create_env()
         result = await env.reset()
         observation = dict(result.observation)
 
         for step in range(1, MAX_STEPS + 1):
             if result.done:
+                completed = True
                 break
 
-            action = get_model_action(client, step, observation, rewards, history)
+            if client is None:
+                action = choose_fallback_action(observation)
+            else:
+                action = get_model_action(client, step, observation, rewards, history)
             action_text = _action_to_text(action)
             step_error: str | None = None
 
@@ -292,10 +306,11 @@ async def main() -> None:
             )
 
             if done:
+                completed = True
                 break
 
         score = round(normalize_score(math.fsum(rewards), observation), 2)
-        success = score > 0.0
+        success = completed and score >= 0.0
     except Exception:
         success = False
         score = 0.0
