@@ -7,11 +7,18 @@ import subprocess
 import sys
 import textwrap
 import time
+import traceback
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from openai import OpenAI
 from openenv.core.generic_client import GenericEnvClient
+
+try:
+    from server.engineer_manager_environment import EngineerManagerEnvironment
+except ImportError:
+    EngineerManagerEnvironment = None  # type: ignore[assignment]
 
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
@@ -103,11 +110,76 @@ def log_error(stage: str, error: Exception) -> None:
     )
 
 
+def log_traceback(stage: str, error: BaseException) -> None:
+    traceback_text = "".join(
+        traceback.format_exception(type(error), error, error.__traceback__)
+    ).rstrip()
+    print(f"[TRACEBACK] stage={_sanitize_field(stage)}", flush=True)
+    print(traceback_text, flush=True)
+
+
 def log_info(stage: str, message: str) -> None:
     print(
         f"[INFO] stage={_sanitize_field(stage)} message={_sanitize_field(message)}",
         flush=True,
     )
+
+
+def log_env_status() -> None:
+    env_fields = {
+        "API_BASE_URL": API_BASE_URL,
+        "MODEL_NAME": MODEL_NAME,
+        "HF_TOKEN": "<set>" if HF_TOKEN else "<missing>",
+        "LOCAL_IMAGE_NAME": LOCAL_IMAGE_NAME or "<missing>",
+        "OPENENV_BASE_URL": OPENENV_BASE_URL or "<missing>",
+        "TASK_NAME": TASK_NAME,
+        "BENCHMARK": BENCHMARK,
+        "MAX_STEPS": MAX_STEPS,
+        "TEMPERATURE": TEMPERATURE,
+        "MAX_TOKENS": MAX_TOKENS,
+        "LOCAL_SERVER_HOST": LOCAL_SERVER_HOST,
+        "LOCAL_SERVER_STARTUP_TIMEOUT": LOCAL_SERVER_STARTUP_TIMEOUT,
+    }
+    formatted = ", ".join(
+        f"{name}={_sanitize_field(value)}" for name, value in env_fields.items()
+    )
+    log_info("env", formatted)
+
+
+@dataclass
+class _EnvResult:
+    observation: dict[str, Any]
+    reward: float | None
+    done: bool
+
+
+class _InProcessEnvClient:
+    def __init__(self) -> None:
+        if EngineerManagerEnvironment is None:
+            raise RuntimeError("Bundled EngineerManagerEnvironment is unavailable")
+        self._env = EngineerManagerEnvironment()
+
+    async def connect(self) -> None:
+        return None
+
+    async def reset(self) -> _EnvResult:
+        observation = self._env.reset().model_dump()
+        return _EnvResult(
+            observation=dict(observation),
+            reward=float(observation.get("reward") or 0.0),
+            done=bool(observation.get("done")),
+        )
+
+    async def step(self, action: dict[str, int]) -> _EnvResult:
+        observation = self._env.step(type("Action", (), action)()).model_dump()
+        return _EnvResult(
+            observation=dict(observation),
+            reward=float(observation.get("reward") or 0.0),
+            done=bool(observation.get("done")),
+        )
+
+    async def close(self) -> None:
+        return None
 
 
 def estimate_max_flow_score(timeline: list[int]) -> float:
@@ -300,7 +372,7 @@ def stop_local_server() -> None:
             process.wait(timeout=5)
 
 
-async def create_env() -> tuple[GenericEnvClient, str]:
+async def create_env() -> tuple[Any, str]:
     if OPENENV_BASE_URL:
         return await _connect_env(OPENENV_BASE_URL), "remote"
 
@@ -312,11 +384,12 @@ async def create_env() -> tuple[GenericEnvClient, str]:
             log_info("docker", "Falling back to bundled local server")
 
     else:
-        log_info("startup", "LOCAL_IMAGE_NAME not set; using bundled local server")
+        log_info("startup", "LOCAL_IMAGE_NAME not set; using in-process bundled environment")
 
-    local_base_url = _start_local_server()
-    log_info("local-server", f"Started bundled env server at {local_base_url}")
-    return await _connect_env(local_base_url), "local-server"
+    local_env = _InProcessEnvClient()
+    await local_env.connect()
+    log_info("env", "Using in-process bundled environment")
+    return local_env, "in-process"
 
 
 async def main() -> None:
@@ -331,6 +404,7 @@ async def main() -> None:
     observation: dict[str, Any] = {}
 
     log_start(TASK_NAME, BENCHMARK, MODEL_NAME)
+    log_env_status()
 
     try:
         if HF_TOKEN:
@@ -379,6 +453,7 @@ async def main() -> None:
         success = score > 0.0
     except Exception as error:
         log_error("runtime", error)
+        log_traceback("runtime", error)
     finally:
         if env is not None:
             try:
@@ -392,6 +467,7 @@ async def main() -> None:
 if __name__ == "__main__":
     try:
         asyncio.run(main())
-    except Exception as error:
+    except BaseException as error:
         log_error("fatal", error)
+        log_traceback("fatal", error)
         log_end(success=False, steps=0, score=0.0, rewards=[])
