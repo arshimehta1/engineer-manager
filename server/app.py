@@ -34,10 +34,9 @@ app = create_fastapi_app(
 )
 
 
-class GraderRequest(BaseModel):
-    task_id: str
-    state: dict
-    reward: float
+class GradeRequest(BaseModel):
+    action: dict
+    ground_truth: dict | None = None
 
 WEB_CSS = dedent(
     """\
@@ -464,12 +463,12 @@ def manifest() -> JSONResponse:
 
 
 @app.get("/tasks", include_in_schema=False)
-def tasks() -> JSONResponse:
-    return JSONResponse({"tasks": TASKS})
+def tasks() -> list[dict]:
+    return TASKS
 
 
 @app.post("/grader", include_in_schema=False)
-def grader(request: GraderRequest) -> JSONResponse:
+def grader(request: GradeRequest) -> JSONResponse:
     graders = {
         "quiet-morning": grade_task_0,
         "meeting-surgery": grade_task_1,
@@ -478,14 +477,26 @@ def grader(request: GraderRequest) -> JSONResponse:
         "engineer_manager_task_1": grade_task_1,
         "engineer_manager_task_2": grade_task_2,
     }
-    grader_fn = graders.get(request.task_id)
+    task_id = request.action.get("task_id", "engineer_manager_task_0")
+    reward = request.action.get("reward", 0.0)
+    state = {
+        "task_id": request.action.get("task_index"),
+        "task_name": request.action.get("task_name"),
+        "metadata": request.action.get("metadata", {}),
+    }
+    if state["task_id"] is None:
+        if task_id == "quiet-morning" or task_id == "engineer_manager_task_0":
+            state["task_id"] = 0
+        elif task_id == "meeting-surgery" or task_id == "engineer_manager_task_1":
+            state["task_id"] = 1
+        elif task_id == "delivery-triage" or task_id == "engineer_manager_task_2":
+            state["task_id"] = 2
+
+    grader_fn = graders.get(task_id)
     if grader_fn is None:
-        return JSONResponse(
-            {"error": f"Unknown task_id: {request.task_id}", "score": 0.0, "passed": False},
-            status_code=400,
-        )
-    score = float(grader_fn(request.state, request.reward))
-    return JSONResponse({"task_id": request.task_id, "score": score, "passed": score > 0.0, "reward": score})
+        return JSONResponse({"score": 0.0}, status_code=200)
+    score = float(grader_fn(state, reward))
+    return JSONResponse({"score": score})
 
 
 def run(host: str = "0.0.0.0", port: int = 8000) -> None:
