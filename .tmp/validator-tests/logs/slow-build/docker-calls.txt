@@ -1,2 +1,0 @@
-info 
-build -t openenv-test /c/Users/arshi/OneDrive/Desktop/yes
