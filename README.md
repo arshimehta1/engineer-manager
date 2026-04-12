@@ -1,7 +1,7 @@
 ---
 title: Engineer Manager Environment Server
 emoji: "🗂️"
-colorFrom: orange
+colorFrom: yellow
 colorTo: yellow
 sdk: docker
 pinned: false
