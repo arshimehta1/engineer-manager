@@ -32,10 +32,11 @@ tasks:
     description: High-noise morning where the agent should mute comms early and protect an uninterrupted work block.
     max_steps: 32
     reset_params:
-      task_name: quiet-morning
+      task_id: 0
     action_schema:
       target_slot: integer slot index within the workday
       operation: 0=idle, 1=schedule work, 2=reschedule meeting, 3=toggle mute comms
+      task_id: quiet-morning
     grader: graders:grade_task_0
     graders:
       - graders:grade_task_0
@@ -49,10 +50,11 @@ tasks:
     description: Fragmented calendar where selective meeting moves should improve flow.
     max_steps: 32
     reset_params:
-      task_name: meeting-surgery
+      task_id: 1
     action_schema:
       target_slot: integer slot index within the workday
       operation: 0=idle, 1=schedule work, 2=reschedule meeting, 3=toggle mute comms
+      task_id: meeting-surgery
     grader: graders:grade_task_1
     graders:
       - graders:grade_task_1
@@ -66,10 +68,11 @@ tasks:
     description: Constrained delivery day with hidden task complexity and tighter tradeoffs.
     max_steps: 32
     reset_params:
-      task_name: delivery-triage
+      task_id: 2
     action_schema:
       target_slot: integer slot index within the workday
       operation: 0=idle, 1=schedule work, 2=reschedule meeting, 3=toggle mute comms
+      task_id: delivery-triage
     grader: graders:grade_task_2
     graders:
       - graders:grade_task_2

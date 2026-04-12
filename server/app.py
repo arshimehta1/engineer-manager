@@ -36,7 +36,8 @@ app = create_fastapi_app(
 
 class GraderRequest(BaseModel):
     task_id: str
-    trajectory: list[dict]
+    state: dict
+    reward: float
 
 WEB_CSS = dedent(
     """\
@@ -473,6 +474,9 @@ def grader(request: GraderRequest) -> JSONResponse:
         "quiet-morning": grade_task_0,
         "meeting-surgery": grade_task_1,
         "delivery-triage": grade_task_2,
+        "engineer_manager_task_0": grade_task_0,
+        "engineer_manager_task_1": grade_task_1,
+        "engineer_manager_task_2": grade_task_2,
     }
     grader_fn = graders.get(request.task_id)
     if grader_fn is None:
@@ -480,7 +484,8 @@ def grader(request: GraderRequest) -> JSONResponse:
             {"error": f"Unknown task_id: {request.task_id}", "score": 0.0, "passed": False},
             status_code=400,
         )
-    return JSONResponse(grader_fn({"trajectory": request.trajectory}))
+    score = float(grader_fn(request.state, request.reward))
+    return JSONResponse({"task_id": request.task_id, "score": score, "passed": score > 0.0, "reward": score})
 
 
 def run(host: str = "0.0.0.0", port: int = 8000) -> None:

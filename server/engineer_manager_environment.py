@@ -8,7 +8,7 @@ import os
 from openenv.core.env_server.interfaces import Environment, EnvironmentMetadata
 from openenv.core.env_server.types import State
 
-from benchmark_tasks import TASK_SPECS, apply_task, grade_trajectory
+from benchmark_tasks import TASK_SPECS, apply_task
 from focus_resource_env import FocusResourceEnv
 
 try:
@@ -38,6 +38,7 @@ class EngineerManagerEnvironment(
         self._distraction_risk = distraction_risk
         self._seed = seed
         self._task_name = task_name or os.getenv("TASK_NAME")
+        self._task_id = 0
         self._step_count = 0
         self._episode_id = str(uuid4())
         self._trajectory: list[dict[str, object]] = []
@@ -53,10 +54,17 @@ class EngineerManagerEnvironment(
         seed: int | None = None,
         episode_id: str | None = None,
         task_name: str | None = None,
+        task_id: int | None = None,
         **_: object,
     ) -> EngineerManagerObservation:
         self._seed = self._seed if seed is None else seed
-        self._task_name = task_name or self._task_name or os.getenv("TASK_NAME")
+        task_names = ["quiet-morning", "meeting-surgery", "delivery-triage"]
+        if task_id is not None and 0 <= int(task_id) < len(task_names):
+            self._task_id = int(task_id)
+            self._task_name = task_names[self._task_id]
+        else:
+            self._task_name = task_name or self._task_name or os.getenv("TASK_NAME")
+            self._task_id = task_names.index(self._task_name) if self._task_name in task_names else 0
         self._episode_id = episode_id or str(uuid4())
         self._step_count = 0
         self._trajectory = []
@@ -125,6 +133,7 @@ class EngineerManagerEnvironment(
         payload["done"] = done
         metadata = dict(info or {})
         metadata["task_name"] = self._task_name
+        metadata["task_id"] = self._task_id
         metadata["episode_metrics"] = {
             "interruptions": int(self._env.interruptions),
             "invalid_actions": int(self._env.invalid_actions),
@@ -136,7 +145,7 @@ class EngineerManagerEnvironment(
                 if step["info"].get("action_info", {}).get("status") == "meeting_rescheduled"
             ),
             "total_score": float(self._env._total_score()),
-            "grader_score": grade_trajectory(self._task_name or "", self._trajectory) if self._trajectory else 0.0,
+            "grader_score": min(max(float(reward or 0.0), 0.0), 1.0),
         }
         payload["metadata"] = metadata
         return EngineerManagerObservation.model_validate(payload)
